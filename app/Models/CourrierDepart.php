@@ -9,34 +9,32 @@ class CourrierDepart extends Model
 {
     use HasFactory;
 
-    // Nom de la table dans la base de données
+    // Nom exact de la table dans la base de données
     protected $table = 'courriers_departs';
 
-    // Les champs que l'on autorise à modifier via un formulaire
+    // Champs qu'on autorise à modifier (Sécurité)
     protected $fillable = [
-        'numero_ordre',    // Le compteur
-        'annee',           // L'année
-        'date_depart',     // Date
-        'destinataire',    // Destinataire
-        'objet',           // Analyse de l'affaire
-        'nombre_pieces',   // Nombre de pièces jointes
-        'observation',     // Remarques
-        'ref_reponse',     // Pour la traçabilité future
-        'user_id'          // Qui a créé l'enregistrement
+        'numero_ordre',
+        'annee',
+        'date_depart',
+        'destinataire',
+        'objet',
+        'nombre_pieces',
+        'observation',
+        'ref_reponse',
+        'user_id'
     ];
 
-    // Conversion automatique des types
+    // Pour que Laravel traite 'date_depart' comme une vraie date (pratique pour le formatage)
     protected $casts = [
-        'date_depart' => 'date', // Transforme automatiquement en objet Carbon (facile pour le formatage)
-        'nombre_pieces' => 'integer',
-        'numero_ordre' => 'integer',
+        'date_depart' => 'date',
     ];
 
     /**
-     * Relation : Un courrier appartient à un utilisateur (celui qui l'a saisi).
+     * Relation : Chaque courrier appartient à un créateur (User).
      */
-    public function user()
+    public function creator()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

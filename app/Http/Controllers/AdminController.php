@@ -6,25 +6,42 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use App\Models\User;
-use App\Models\CourrierDepart; // Notre nouveau Modèle
-use PhpOffice\PhpWord\TemplateProcessor; // Pour générer le Word
+use App\Models\CourrierDepart; // Import du modèle
+use PhpOffice\PhpWord\TemplateProcessor;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
-    // =========================================================
-    // 1. AUTHENTIFICATION & PROFIL (On garde l'existant)
-    // =========================================================
-
+    // --- GESTION AUTH ---
     public function logoutHandler(Request $request)
     {
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
-        return redirect()->route('admin.login')
-               ->with('fail', 'Vous êtes déconnecté.');
+        return redirect()->route('admin.login')->with('fail', 'Vous êtes déconnecté.');
     }
 
+    // --- DASHBOARD (MODIFIÉ) ---
+    public function adminDashboard()
+    {
+        // 1. Statistiques
+        $stats = [
+            'total_annee' => CourrierDepart::where('annee', date('Y'))->count(),
+            'total_aujourdhui' => CourrierDepart::whereDate('date_depart', Carbon::today())->count(),
+            'total_global' => CourrierDepart::count(),
+        ];
+
+        // 2. Les 5 derniers bordereaux (Pour affichage rapide)
+        $recents = CourrierDepart::orderBy('created_at', 'desc')->take(5)->get();
+
+        return view('back.pages.dashboard', [
+            'pageTitle' => 'Tableau de bord',
+            'stats' => $stats,
+            'recents' => $recents
+        ]);
+    }
+
+    // --- PROFIL ---
     public function profileView()
     {
         return view('back.pages.profile', ['pageTitle' => 'Mon Profil']);
@@ -43,65 +60,60 @@ class AdminController extends Controller
             File::delete(public_path($file_path));
         }
         $upload = $file->move(public_path($path), $new_picture_name);
-
         if($upload){
             $user->update(['picture'=>$new_picture_name]);
             return response()->json(['status'=>1, 'msg'=>'Photo de profil mise à jour.']);
-        }else{
+        } else {
             return response()->json(['status'=>0, 'msg'=>'Erreur lors du chargement.']);
         }
     }
 
-    // =========================================================
-    // 2. TABLEAU DE BORD (Accueil)
-    // =========================================================
-
-    public function adminDashboard()
-    {
-        return view('back.pages.dashboard', ['pageTitle' => 'Tableau de Bord']);
-    }
-
-    // =========================================================
-    // 3. GESTION DES BORDEREAUX (NOUVEAU)
-    // =========================================================
-
-    /**
-     * Télécharge le Bordereau en format Word (.docx)
-     */
+    // --- TÉLÉCHARGEMENT WORD ---
     public function downloadBordereau($id)
     {
-        // 1. Récupérer les données
         $courrier = CourrierDepart::findOrFail($id);
+        $templatePath = storage_path('app/templates/template.docx');
 
-        // 2. Chemin du Template (assurez-vous d'avoir créé le dossier storage/app/templates)
-        $templatePath = storage_path('app/templates/template_bordereau.docx');
-
-        // Vérification de sécurité
         if (!file_exists($templatePath)) {
-            return back()->with('fail', 'Erreur : Le fichier modèle (template_bordereau.docx) est introuvable.');
+            // Fallback dossier public si non trouvé dans storage
+            $templatePath = public_path('template.docx');
+            if(!file_exists($templatePath)){
+                 return back()->with('fail', "Le fichier 'template.docx' est introuvable.");
+            }
         }
 
-        // 3. Chargement du processeur Word
-        $templateProcessor = new TemplateProcessor($templatePath);
+        try {
+            $templateProcessor = new TemplateProcessor($templatePath);
 
-        // 4. Remplissage des variables (Correspondance BDD -> Word)
-        $templateProcessor->setValue('date', $courrier->date_depart->format('d/m/Y'));
-        $templateProcessor->setValue('destinataire', $courrier->destinataire);
-        $templateProcessor->setValue('numero', $courrier->numero_ordre . '/' . $courrier->annee);
+            // Formatage de la date
+            $dateFormatted = $courrier->date_depart ? $courrier->date_depart->format('d/m/Y') : '--/--/----';
 
-        // Gestion des sauts de ligne dans le contenu
-        $contenuTraite = str_replace("\n", "<w:br/>", $courrier->objet);
-        $templateProcessor->setValue('contenu', $contenuTraite);
+            // Remplissage des variables
+            $templateProcessor->setValue('date', $dateFormatted);
+            $templateProcessor->setValue('destinataire', $courrier->destinataire);
+            $templateProcessor->setValue('numero', $courrier->numero_ordre . '/' . $courrier->annee);
 
-        $templateProcessor->setValue('nombre', $courrier->nombre_pieces > 0 ? $courrier->nombre_pieces : '');
-        $templateProcessor->setValue('remarques', $courrier->observation ?? '');
+            // Gestion des sauts de ligne pour l'Objet
+            $objetTraite = str_replace("\n", "<w:br/>", $courrier->objet);
+            $templateProcessor->setValue('contenu', $objetTraite);
 
-        // 5. Sauvegarde temporaire et Téléchargement
-        $fileName = 'Bordereau_' . $courrier->numero_ordre . '_' . $courrier->annee . '.docx';
-        $savePath = storage_path('app/public/' . $fileName);
+            $templateProcessor->setValue('nombre', $courrier->nombre_pieces);
+            $templateProcessor->setValue('remarques', $courrier->observation ?? '');
 
-        $templateProcessor->saveAs($savePath);
+            // Sauvegarde
+            $fileName = 'Bordereau_' . $courrier->numero_ordre . '_' . $courrier->annee . '.docx';
+            $tempPath = storage_path('app/public/' . $fileName);
 
-        return response()->download($savePath)->deleteFileAfterSend(true);
+            if (!file_exists(dirname($tempPath))) {
+                mkdir(dirname($tempPath), 0777, true);
+            }
+
+            $templateProcessor->saveAs($tempPath);
+
+            return response()->download($tempPath)->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            return back()->with('fail', "Erreur : " . $e->getMessage());
+        }
     }
 }

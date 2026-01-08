@@ -13,37 +13,31 @@
         <div class="sidebar-menu">
             <ul id="accordion-menu">
 
-                {{-- Lien Accueil --}}
-                <li>
-                    <a href="{{ route('admin.dashboard') }}" class="dropdown-toggle no-arrow">
-                        <span class="micon dw dw-house-1"></span><span class="mtext">Accueil</span>
-                    </a>
-                </li>
+    <li>
+        <a href="{{ route('admin.dashboard') }}" class="dropdown-toggle no-arrow {{ Route::is('admin.dashboard') ? 'active' : '' }}">
+            <span class="micon dw dw-house-1"></span><span class="mtext">Tableau de bord</span>
+        </a>
+    </li>
 
-                {{-- Lien Bureau d'Ordre --}}
-                <li>
-                    <a href="{{ route('admin.bordereaux') }}" class="dropdown-toggle no-arrow">
-                        <span class="micon dw dw-email"></span><span class="mtext">Départs (Registre)</span>
-                    </a>
-                </li>
+    <li>
+        <a href="{{ route('admin.bordereaux') }}" class="dropdown-toggle no-arrow {{ Route::is('admin.bordereaux') ? 'active' : '' }}">
+            <span class="micon dw dw-email"></span><span class="mtext">Bureau d'Ordre</span>
+        </a>
+    </li>
 
-                <li>
-                    <div class="dropdown-divider"></div>
-                </li>
+    <li>
+        <div class="dropdown-divider"></div>
+    </li>
+    <li>
+        <div class="sidebar-small-cap">Administration</div>
+    </li>
+    <li>
+        <a href="{{ route('admin.utilisateurs') }}" class="dropdown-toggle no-arrow {{ Route::is('admin.utilisateurs') ? 'active' : '' }}">
+            <span class="micon dw dw-user-13"></span><span class="mtext">Utilisateurs</span>
+        </a>
+    </li>
 
-                {{-- Lien Déconnexion --}}
-                <li>
-                    <a href="{{ route('admin.logout') }}"
-                       onclick="event.preventDefault(); document.getElementById('logout-form-menu').submit();"
-                       class="dropdown-toggle no-arrow">
-                        <span class="micon dw dw-logout"></span><span class="mtext">Se déconnecter</span>
-                    </a>
-                    <form id="logout-form-menu" action="{{ route('admin.logout') }}" method="POST" class="d-none">
-                        @csrf
-                    </form>
-                </li>
-
-            </ul>
+    </ul>
         </div>
     </div>
 </div>

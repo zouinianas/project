@@ -1,177 +1,175 @@
 <div>
-
-    {{-- BARRE D'ACTIONS (Recherche + Bouton Nouveau) --}}
-    <div class="pd-20 card-box mb-30">
-        <div class="clearfix">
-            <div class="pull-left">
-                <h4 class="text-blue h4">Registre des Départs</h4>
-                <p class="mb-30">Gestion numérique des bordereaux d'envoi</p>
+    <div class="page-header">
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                <div class="title">
+                    <h4>Gestion des Bordereaux</h4>
+                </div>
+                <nav aria-label="breadcrumb" role="navigation">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Accueil</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Bordereaux</li>
+                    </ol>
+                </nav>
             </div>
-            <div class="pull-right">
-                <button wire:click="openModal" class="btn btn-primary btn-sm scroll-click" type="button">
-                    <i class="fa fa-plus"></i> Nouveau Bordereau
+            <div class="col-md-6 col-sm-12 text-right">
+                <button wire:click="openAddModal" class="btn btn-primary">
+                    <i class="icon-copy dw dw-add"></i> Nouveau Bordereau
                 </button>
             </div>
         </div>
+    </div>
 
-        {{-- Barre de Recherche --}}
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Rechercher (Destinataire, Objet...)" wire:model.live.debounce.500ms="search">
+    <div class="card-box mb-30">
+        <div class="pd-20">
+            <div class="row">
+                <div class="col-md-4">
+                    <h4 class="text-blue h4">Liste des envois</h4>
+                </div>
+                <div class="col-md-8">
+                    <input type="text" class="form-control" placeholder="Rechercher par numéro, destinataire ou objet..." wire:model.live.debounce.300ms="search">
+                </div>
             </div>
         </div>
 
-        {{-- TABLEAU (Style Registre Papier) --}}
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead class="bg-light">
+        <div class="pb-20">
+            <table class="data-table table stripe hover nowrap">
+                <thead>
                     <tr>
-                        <th style="width: 10%;">N° Ordre</th>
-                        <th style="width: 12%;">Date Départ</th>
-                        <th style="width: 20%;">Destinataire</th>
-                        <th style="width: 35%;">Objet (Analyse)</th>
-                        <th style="width: 5%;">Pièces</th>
-                        <th style="width: 18%;">Actions</th>
+                        <th class="table-plus datatable-nosort">N° / Année</th>
+                        <th>Date</th>
+                        <th>Destinataire</th>
+                        <th>Objet</th>
+                        <th>Pièces</th>
+                        <th class="datatable-nosort">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($courriers as $c)
+                    @forelse($courriers as $item)
                         <tr>
-                            <td class="font-weight-bold text-blue">
-                                {{ $c->numero_ordre }} / {{ $c->annee }}
+                            <td class="table-plus">
+                                <span class="badge badge-pill badge-primary" style="font-size: 1.1em;">
+                                    N° {{ $item->numero_ordre }} / {{ $item->annee }}
+                                </span>
                             </td>
-                            <td>{{ $c->date_depart->format('d/m/Y') }}</td>
-                            <td>{{ $c->destinataire }}</td>
-                            <td>{{ Str::limit($c->objet, 60) }}</td>
-                            <td class="text-center">
-                                @if($c->nombre_pieces > 0)
-                                    <span class="badge badge-secondary">{{ $c->nombre_pieces }}</span>
-                                @else
-                                    -
-                                @endif
-                            </td>
+                            <td>{{ $item->date_depart ? $item->date_depart->format('d/m/Y') : '-' }}</td>
+                            <td>{{ Str::limit($item->destinataire, 30) }}</td>
+                            <td>{{ Str::limit($item->objet, 40) }}</td>
+                            <td>{{ $item->nombre_pieces }}</td>
                             <td>
-                                {{-- Bouton Télécharger Word --}}
-                                <a href="{{ route('admin.bordereaux.download', $c->id) }}" class="btn btn-sm btn-success" title="Télécharger Word">
-                                    <i class="fa fa-file-word-o"></i>
-                                </a>
+                                <div class="dropdown">
+                                    <a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+                                        <i class="dw dw-more"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
+                                        <a class="dropdown-item" href="#" wire:click.prevent="edit({{ $item->id }})"><i class="dw dw-edit2"></i> Modifier</a>
 
-                                {{-- Bouton Modifier --}}
-                                <button wire:click="edit({{ $c->id }})" class="btn btn-sm btn-info" title="Modifier">
-                                    <i class="fa fa-pencil"></i>
-                                </button>
+                                        <a class="dropdown-item" href="{{ route('admin.bordereau.download', $item->id) }}">
+                                            <i class="dw dw-file-word"></i> Télécharger Word
+                                        </a>
 
-                                {{-- Bouton Supprimer --}}
-                                <button wire:click="delete({{ $c->id }})"
-                                        onclick="confirm('Êtes-vous sûr de vouloir supprimer ce bordereau ?') || event.stopImmediatePropagation()"
-                                        class="btn btn-sm btn-danger" title="Supprimer">
-                                    <i class="fa fa-trash"></i>
-                                </button>
+                                        <button class="dropdown-item text-danger" wire:confirm="Voulez-vous vraiment supprimer ce bordereau ?" wire:click="delete({{ $item->id }})"><i class="dw dw-delete-3"></i> Supprimer</button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">
-                                Aucune donnée trouvée. Commencez par créer un nouveau bordereau.
+                            <td colspan="6" class="text-center py-4">
+                                <div class="empty-state text-center">
+                                    <img src="/back/vendors/images/product-img1.jpg" style="height: 100px; opacity:0.5" alt="">
+                                    <p class="mt-2">Aucun bordereau trouvé.</p>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
-        </div>
 
-        {{-- Pagination --}}
-        <div class="mt-2">
-            {{ $courriers->links() }}
+            <div class="px-4 py-2">
+                {{ $courriers->links() }}
+            </div>
         </div>
     </div>
 
-    {{-- MODAL (Formulaire d'Ajout/Modification) --}}
-    <div wire:ignore.self class="modal fade" id="bordereau_modal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div wire:ignore.self class="modal fade" id="bordereau-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
-                        {{ $isUpdateMode ? 'Modifier le Bordereau' : 'Nouveau Bordereau' }}
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        {{ $isEditMode ? 'Modifier le Bordereau' : 'Nouveau Bordereau' }}
+                    </h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
+
                 <form wire:submit.prevent="save">
                     <div class="modal-body">
-
                         <div class="row">
-                            {{-- Date --}}
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Date de Départ <span class="text-danger">*</span></label>
+                                    <label>Date de départ <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" wire:model="date_depart">
                                     @error('date_depart') <span class="text-danger small">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-
-                            {{-- Nombre de pièces --}}
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Nombre de Pièces</label>
+                                    <label>Nombre de pièces</label>
                                     <input type="number" class="form-control" wire:model="nombre_pieces" min="0">
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Destinataire --}}
                         <div class="form-group">
                             <label>Destinataire <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" placeholder="Ex: Monsieur le Président..." wire:model="destinataire">
+                            <input type="text" class="form-control" wire:model="destinataire" placeholder="Ex: M. le Président de l'Université...">
                             @error('destinataire') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
 
-                        {{-- Objet --}}
                         <div class="form-group">
-                            <label>Objet (Analyse) <span class="text-danger">*</span></label>
-                            <textarea class="form-control" rows="4" placeholder="Résumé de l'affaire..." wire:model="objet"></textarea>
+                            <label>Objet <span class="text-danger">*</span></label>
+                            <textarea class="form-control" wire:model="objet" rows="3" placeholder="Objet du courrier..."></textarea>
                             @error('objet') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
 
-                        {{-- Observations --}}
                         <div class="form-group">
-                            <label>Observations (Optionnel)</label>
-                            <textarea class="form-control" rows="2" wire:model="observation"></textarea>
+                            <label>Observations</label>
+                            <textarea class="form-control" wire:model="observation" rows="2"></textarea>
                         </div>
-
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                         <button type="submit" class="btn btn-primary">
-                            {{ $isUpdateMode ? 'Mettre à jour' : 'Enregistrer' }}
+                            <span wire:loading.remove>Enregistrer</span>
+                            <span wire:loading>Traitement...</span>
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
-    {{-- SCRIPTS LOCAUX (Pour gérer l'ouverture/fermeture du Modal) --}}
-    @push('scripts')
-    <script>
-        // Ouvrir le modal quand Livewire le demande
-        window.addEventListener('showBordereauModal', event => {
-            $('#bordereau_modal').modal('show');
-        });
-
-        // Fermer le modal quand Livewire le demande
-        window.addEventListener('hideBordereauModal', event => {
-            $('#bordereau_modal').modal('hide');
-        });
-
-        // Afficher les notifications Toastr
-        window.addEventListener('showToastr', event => {
-            if(typeof toastr !== 'undefined'){
-                toastr[event.detail[0].type](event.detail[0].message);
-            }
-        });
-    </script>
-    @endpush
-
 </div>
+
+@push('scripts')
+<script>
+    // Écouteur pour OUVRIR le modal
+    window.addEventListener('showModal', event => {
+        $('#bordereau-modal').modal('show');
+    });
+
+    // Écouteur pour FERMER le modal
+    window.addEventListener('hideModal', event => {
+        $('#bordereau-modal').modal('hide');
+    });
+
+    // Écouteur pour les notifications
+    window.addEventListener('showToastr', event => {
+        if(typeof toastr !== 'undefined'){
+            toastr[event.detail[0].type](event.detail[0].message);
+        } else {
+            alert(event.detail[0].message);
+        }
+    });
+</script>
+@endpush
