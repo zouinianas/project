@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Cercle de fond violet -->
+  <circle cx="100" cy="100" r="95" fill="#4f46e5"/>
+
+  <!-- Texte FS en grand -->
+  <text x="100" y="100" font-family="Arial, sans-serif" font-size="80"
+        font-weight="bold" fill="white" text-anchor="middle"
+        dominant-baseline="middle">FS</text>
+
+  <!-- Sous-texte FÈS -->
+  <text x="100" y="145" font-family="Arial, sans-serif" font-size="24"
+        font-weight="600" fill="white" text-anchor="middle"
+        opacity="0.9">FÈS</text>
+
+  <!-- Petit avion décoratif en haut -->
+  <g transform="translate(100, 35)">
+    <path d="M0,-5 L5,5 L0,3 L-5,5 Z" fill="white" opacity="0.8"/>
+  </g>
+</svg>

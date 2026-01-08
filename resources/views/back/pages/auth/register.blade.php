@@ -1,80 +1,122 @@
 @extends('back.layout.auth-layout')
-@section('pageTitle', isset($pageTitle) ? $pageTitle : 'Register')
+@section('pageTitle', isset($pageTitle) ? $pageTitle : 'Inscription')
 @section('content')
-<div class="login-box bg-white box-shadow border-radius-10">
-    <div class="login-title">
-        <h2 class="text-center text-primary">Register</h2>
-    </div>
 
-    <form action="{{ route('admin.register_handler') }}" method="POST">
+<div class="auth-header">
+    <h2>Créer un compte</h2>
+    <p>Rejoignez Sorties FSDM dès maintenant</p>
+</div>
 
-        <x-form-alerts></x-form-alerts>
-        @csrf
+<x-form-alerts></x-form-alerts>
 
-        {{-- Nom --}}
-        <div class="input-group custom mb-1">
-            <input type="text" class="form-control form-control-lg" placeholder="Nom complet" name="name" value="{{ old('name') }}">
-            <div class="input-group-append custom">
-                <span class="input-group-text"><i class="icon-copy dw dw-user1"></i></span>
-            </div>
+<form action="{{ route('admin.register_handler') }}" method="POST">
+    @csrf
+
+    {{-- Nom Complet --}}
+    <div class="form-group">
+        <label for="name">Nom complet</label>
+        <div class="input-wrapper">
+            <i class="fas fa-user"></i>
+            <input
+                type="text"
+                id="name"
+                class="form-control @error('name') is-invalid @enderror"
+                placeholder="Votre nom complet"
+                name="name"
+                value="{{ old('name') }}"
+                required
+            >
         </div>
         @error('name')
-            <span class="text-danger ml-1">{{ $message }}</span>
+            <span class="error-message">{{ $message }}</span>
         @enderror
+    </div>
 
-        {{-- Username --}}
-        <div class="input-group custom mb-1 mt-2">
-            <input type="text" class="form-control form-control-lg" placeholder="Username" name="username" value="{{ old('username') }}">
-            <div class="input-group-append custom">
-                <span class="input-group-text"><i class="icon-copy dw dw-user"></i></span>
-            </div>
+    {{-- Username --}}
+    <div class="form-group">
+        <label for="username">Nom d'utilisateur</label>
+        <div class="input-wrapper">
+            <i class="fas fa-id-card"></i>
+            <input
+                type="text"
+                id="username"
+                class="form-control @error('username') is-invalid @enderror"
+                placeholder="Choisissez un nom d'utilisateur"
+                name="username"
+                value="{{ old('username') }}"
+                required
+            >
         </div>
         @error('username')
-            <span class="text-danger ml-1">{{ $message }}</span>
+            <span class="error-message">{{ $message }}</span>
         @enderror
+    </div>
 
-        {{-- Email --}}
-        <div class="input-group custom mb-1 mt-2">
-            <input type="email" class="form-control form-control-lg" placeholder="Email" name="email" value="{{ old('email') }}">
-            <div class="input-group-append custom">
-                <span class="input-group-text"><i class="icon-copy dw dw-email"></i></span>
-            </div>
+    {{-- Email --}}
+    <div class="form-group">
+        <label for="email">Email</label>
+        <div class="input-wrapper">
+            <i class="fas fa-envelope"></i>
+            <input
+                type="email"
+                id="email"
+                class="form-control @error('email') is-invalid @enderror"
+                placeholder="votre@email.com"
+                name="email"
+                value="{{ old('email') }}"
+                required
+            >
         </div>
         @error('email')
-            <span class="text-danger ml-1">{{ $message }}</span>
-        @endError
+            <span class="error-message">{{ $message }}</span>
+        @enderror
+    </div>
 
-        {{-- Password --}}
-        <div class="input-group custom mb-1 mt-2">
-            <input type="password" class="form-control form-control-lg" placeholder="Mot de passe" name="password">
-            <div class="input-group-append custom">
-                <span class="input-group-text"><i class="dw dw-padlock1"></i></span>
-            </div>
+    {{-- Password --}}
+    <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <div class="input-wrapper">
+            <i class="fas fa-lock"></i>
+            <input
+                type="password"
+                id="password"
+                class="form-control @error('password') is-invalid @enderror"
+                placeholder="••••••••••••"
+                name="password"
+                required
+            >
         </div>
         @error('password')
-            <span class="text-danger ml-1">{{ $message }}</span>
-        @endError
+            <span class="error-message">{{ $message }}</span>
+        @enderror
+    </div>
 
-        {{-- Confirm Password --}}
-        <div class="input-group custom mb-1 mt-2">
-            <input type="password" class="form-control form-control-lg" placeholder="Confirmer le mot de passe" name="password_confirmation">
-            <div class="input-group-append custom">
-                <span class="input-group-text"><i class="dw dw-padlock1"></i></span>
-            </div>
+    {{-- Confirm Password --}}
+    <div class="form-group">
+        <label for="password_confirmation">Confirmer le mot de passe</label>
+        <div class="input-wrapper">
+            <i class="fas fa-lock"></i>
+            <input
+                type="password"
+                id="password_confirmation"
+                class="form-control"
+                placeholder="••••••••••••"
+                name="password_confirmation"
+                required
+            >
         </div>
-        {{-- (Pas besoin d'erreur ici, l'erreur 'password' gère la confirmation) --}}
+    </div>
 
+    {{-- Register Button --}}
+    <button type="submit" class="btn-primary-modern" style="margin-top: 10px;">S'inscrire</button>
 
-        <div class="row mt-3">
-            <div class="col-sm-12">
-                <div class="input-group mb-0">
-                    <input class="btn btn-primary btn-lg btn-block" type="submit" value="Register">
-                </div>
-                <div class="font-16 weight-600 text-center" data-color="#707373" style="margin-top: 15px;">
-                    Déjà un compte ? <a href="{{ route('admin.login') }}">Login</a>
-                </div>
-            </div>
-        </div>
-    </form>
-</div>
+    {{-- Divider --}}
+    <div class="divider">
+        <span>Déjà inscrit ?</span>
+    </div>
+
+    {{-- Login Button --}}
+    <a href="{{ route('admin.login') }}" class="btn-outline-modern">Se connecter</a>
+</form>
+
 @endsection

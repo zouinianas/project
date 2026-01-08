@@ -1,42 +1,62 @@
 @extends('back.layout.auth-layout')
-@section('pageTitle', isset($pageTitle) ? $pageTitle : 'Page Title Here')
+@section('pageTitle', 'Réinitialiser le mot de passe')
 @section('content')
 
-<div class="login-box bg-white box-shadow border-radius-10">
-    <div class="login-title">
-        <h2 class="text-center text-primary">Reset Password</h2>
-    </div>
-    <h6 class="mb-20">Enter your new password, confirm and submit</h6>
-    <form action="{{ route('admin.reset_password_handler',['token'=>$token]) }}" method="POST">
-        <x-form-alerts></x-form-alerts>
-        @csrf
-        <div class="input-group custom mb-1">
-            <input type="password" class="form-control form-control-lg" placeholder="New Password" name="new_password">
-            <div class="input-group-append custom">
-                <span class="input-group-text"><i class="dw dw-padlock1"></i></span>
-            </div>
+<div class="auth-header">
+    <h2>Nouveau mot de passe</h2>
+    <p>Choisissez un nouveau mot de passe sécurisé</p>
+</div>
+
+<form action="{{ route('admin.reset_password_handler', ['token' => $token]) }}" method="POST">
+    <x-form-alerts></x-form-alerts>
+    @csrf
+
+    {{-- Nouveau mot de passe --}}
+    <div class="form-group">
+        <label>Nouveau mot de passe</label>
+        <div class="input-wrapper">
+            <i class="fas fa-lock"></i>
+            <input
+                type="password"
+                name="new_password"
+                placeholder="Minimum 8 caractères"
+                required
+                autofocus
+            >
         </div>
         @error('new_password')
-            <span class="text-danger ml-1">{{ $message }}</span>
+            <span class="error-message">{{ $message }}</span>
         @enderror
-        <div class="input-group custom mb-1 mt-3">
-            <input type="password" class="form-control form-control-lg" placeholder="Confirm New Password" name="new_password_confirmation">
-            <div class="input-group-append custom">
-                <span class="input-group-text"><i class="dw dw-padlock1"></i></span>
-            </div>
+    </div>
+
+    {{-- Confirmation --}}
+    <div class="form-group">
+        <label>Confirmer le mot de passe</label>
+        <div class="input-wrapper">
+            <i class="fas fa-lock"></i>
+            <input
+                type="password"
+                name="new_password_confirmation"
+                placeholder="Répétez votre nouveau mot de passe"
+                required
+            >
         </div>
         @error('new_password_confirmation')
-            <span  class="text-danger ml-1">{{ $message }}</span>
+            <span class="error-message">{{ $message }}</span>
         @enderror
-        <div class="row align-items-center">
-            <div class="col-5">
-                <div class="input-group mb-0">
+    </div>
 
-                    <input class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">
-                </div>
-            </div>
-        </div>
-    </form>
-</div>
+    {{-- Conseils de sécurité --}}
+    <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 14px; margin: 20px 0; font-size: 13px; color: #075985;">
+        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+        <strong>Conseil :</strong> Utilisez au moins 8 caractères avec des lettres, chiffres et symboles.
+    </div>
+
+    {{-- Bouton Réinitialiser --}}
+    <button type="submit" class="btn-primary-modern">
+        <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+        Réinitialiser mon mot de passe
+    </button>
+</form>
 
 @endsection
